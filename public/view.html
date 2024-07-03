@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QR Code Viewer</title>
+  </head>
+  <body>
+    <h1>QR Code Viewer</h1>
+    <div id="qrCodeContainer"></div>
+    <script>
+      const shortId = window.location.pathname.split("/").pop();
+      fetch(`/url/qr/${shortId}`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.qrCode) {
+            const qrCodeContainer = document.getElementById("qrCodeContainer");
+            const img = document.createElement("img");
+            img.src = data.qrCode;
+            qrCodeContainer.appendChild(img);
+          } else {
+            qrCodeContainer.textContent = "QR code not found";
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching QR code:", error);
+        });
+    </script>
+  </body>
+</html>
