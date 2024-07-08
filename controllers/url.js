@@ -1,4 +1,3 @@
-// controllers/url.js
 const { nanoid } = require("nanoid");
 const QRCode = require("qrcode");
 const URL = require("../models/url");
@@ -24,9 +23,7 @@ async function handleGenerateNewShortURL(req, res) {
     const ShortID = nanoid(8);
     const qrCodeURL = await QRCode.toDataURL(url);
     const activationDate = new Date();
-    const expiryDate = new Date(
-      activationDate.getTime() + 3 * 30 * 24 * 60 * 60 * 1000
-    );
+    const expiryDate = new Date(activationDate.getTime() + 2 * 60 * 1000);
 
     const newUrl = new URL({
       ShortId: ShortID,

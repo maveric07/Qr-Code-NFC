@@ -35,7 +35,7 @@ const urlSchema = new mongoose.Schema({
   },
   expiryDate: {
     type: Date,
-    default: () => Date.now() + 3 * 30 * 24 * 60 * 60 * 1000, // 3 months from now
+    default: () => Date.now() + 2 * 60 * 1000, // 3 months from now
     // default: () => Date.now() + 2 * 60 * 1000, // 2 minutes from now
   },
   isInactive: {

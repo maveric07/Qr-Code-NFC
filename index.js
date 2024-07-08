@@ -7,8 +7,8 @@ const path = require("path");
 const app = express();
 const PORT = 8001;
 
-connectToMongoDB("mongodb://127.0.0.1:27017/short-url")
-  .then(() => console.log("Mongodb connected"))
+connectToMongoDB("mongodb://127.0.0.1:27017/qr-url")
+  .then(() => console.log("Mongodb connected to qr-url"))
   .catch((error) => console.error("Failed to connect to MongoDB", error));
 
 app.use(express.json());
