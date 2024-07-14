@@ -1,0 +1,105 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>All QR Codes Viewer</title>
+    <style>
+      .qrCodeItem {
+        margin-bottom: 20px;
+      }
+      img {
+        max-width: 200px;
+        max-height: 200px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>All QR Codes Viewer</h1>
+
+    <div id="qrCodesContainer"></div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", async function () {
+        const [userId] = window.location.pathname.split("/").slice(-2); // Extract userId from URL
+        const response = await fetch(`/url/${userId}`); // Fetch QR codes for the user
+        const data = await response.json();
+
+        const qrCodesContainer = document.getElementById("qrCodesContainer");
+
+        if (data.length === 0) {
+          qrCodesContainer.innerHTML =
+            "<p>No QR codes found for this user.</p>";
+          return;
+        }
+
+        // Iterate through each QR code data and create elements
+        data.forEach((item) => {
+          const qrCodeContainer = document.createElement("div");
+          qrCodeContainer.classList.add("qrCodeItem");
+
+          const qrCodeImg = document.createElement("img");
+          qrCodeImg.src = item.qrCode;
+
+          const shortDescription = document.createElement("p");
+          shortDescription.textContent = `Short Description: ${item.shortDescription}`;
+
+          qrCodeContainer.appendChild(qrCodeImg);
+          qrCodeContainer.appendChild(shortDescription);
+
+          qrCodesContainer.appendChild(qrCodeContainer);
+        });
+      });
+    </script>
+  </body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>All QR Codes Viewer</title>
+    <style>
+      .qrCodeItem {
+        margin-bottom: 20px;
+      }
+      img {
+        max-width: 200px;
+        max-height: 200px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>All QR Codes Viewer</h1>
+
+    <div id="qrCodesContainer"></div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", async function () {
+        const userId = window.location.pathname.split("/").pop();
+        const response = await fetch(`/url/${userId}`);
+        const data = await response.json();
+
+        const qrCodesContainer = document.getElementById("qrCodesContainer");
+
+        // Iterate through each QR code data and create elements
+        data.forEach((item) => {
+          const qrCodeContainer = document.createElement("div");
+          qrCodeContainer.classList.add("qrCodeItem");
+
+          const qrCodeImg = document.createElement("img");
+          qrCodeImg.src = item.qrCode;
+
+          const shortDescription = document.createElement("p");
+          shortDescription.textContent = `Short Description: ${item.shortDescription}`;
+
+          qrCodeContainer.appendChild(qrCodeImg);
+          qrCodeContainer.appendChild(shortDescription);
+
+          qrCodesContainer.appendChild(qrCodeContainer);
+        });
+      });
+    </script>
+  </body>
+</html>
