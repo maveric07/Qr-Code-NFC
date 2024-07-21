@@ -1,59 +1,3 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>All QR Codes Viewer</title>
-    <style>
-      .qrCodeItem {
-        margin-bottom: 20px;
-      }
-      img {
-        max-width: 200px;
-        max-height: 200px;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>All QR Codes Viewer</h1>
-
-    <div id="qrCodesContainer"></div>
-
-    <script>
-      document.addEventListener("DOMContentLoaded", async function () {
-        const [userId] = window.location.pathname.split("/").slice(-2); // Extract userId from URL
-        const response = await fetch(`/url/${userId}`); // Fetch QR codes for the user
-        const data = await response.json();
-
-        const qrCodesContainer = document.getElementById("qrCodesContainer");
-
-        if (data.length === 0) {
-          qrCodesContainer.innerHTML =
-            "<p>No QR codes found for this user.</p>";
-          return;
-        }
-
-        // Iterate through each QR code data and create elements
-        data.forEach((item) => {
-          const qrCodeContainer = document.createElement("div");
-          qrCodeContainer.classList.add("qrCodeItem");
-
-          const qrCodeImg = document.createElement("img");
-          qrCodeImg.src = item.qrCode;
-
-          const shortDescription = document.createElement("p");
-          shortDescription.textContent = `Short Description: ${item.shortDescription}`;
-
-          qrCodeContainer.appendChild(qrCodeImg);
-          qrCodeContainer.appendChild(shortDescription);
-
-          qrCodesContainer.appendChild(qrCodeContainer);
-        });
-      });
-    </script>
-  </body>
-</html> -->
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -68,37 +12,139 @@
         max-width: 200px;
         max-height: 200px;
       }
+      .container {
+        display: flex;
+        justify-content: space-between;
+      }
+      .section {
+        width: 45%;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      .section h2 {
+        text-align: center;
+      }
+      .activateButton {
+        display: block;
+        margin: 10px auto;
+        padding: 5px 10px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+      .search-container {
+        margin-bottom: 20px;
+        text-align: center;
+      }
     </style>
   </head>
   <body>
     <h1>All QR Codes Viewer</h1>
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="Search by Description" />
+      <button id="searchButton">Search</button>
+    </div>
+    <br />
 
-    <div id="qrCodesContainer"></div>
-
+    <div class="container">
+      <div class="section" id="activatedQRs">
+        <h2>Activated QR Codes</h2>
+      </div>
+      <div class="section" id="expiredQRs">
+        <h2>Expired QR Codes</h2>
+      </div>
+    </div>
     <script>
       document.addEventListener("DOMContentLoaded", async function () {
         const userId = window.location.pathname.split("/").pop();
-        const response = await fetch(`/url/${userId}`);
-        const data = await response.json();
+        const searchInput = document.getElementById("searchInput");
+        const searchButton = document.getElementById("searchButton");
 
-        const qrCodesContainer = document.getElementById("qrCodesContainer");
+        function filterQRs(qrCodes, query) {
+          return qrCodes.filter((item) =>
+            item.shortDescription.toLowerCase().startsWith(query.toLowerCase())
+          );
+        }
 
-        // Iterate through each QR code data and create elements
-        data.forEach((item) => {
-          const qrCodeContainer = document.createElement("div");
-          qrCodeContainer.classList.add("qrCodeItem");
+        async function fetchQRData() {
+          const response = await fetch(`/url/${userId}`);
+          const data = await response.json();
+          return data;
+        }
 
-          const qrCodeImg = document.createElement("img");
-          qrCodeImg.src = item.qrCode;
+        function renderQRs(qrCodes) {
+          const activatedQRsContainer = document.getElementById("activatedQRs");
+          const expiredQRsContainer = document.getElementById("expiredQRs");
 
-          const shortDescription = document.createElement("p");
-          shortDescription.textContent = `Short Description: ${item.shortDescription}`;
+          // Clear only the QR code items, not the headings
+          const qrCodeItems =
+            activatedQRsContainer.querySelectorAll(".qrCodeItem");
+          qrCodeItems.forEach((item) => item.remove());
+          const expiredItems =
+            expiredQRsContainer.querySelectorAll(".qrCodeItem");
+          expiredItems.forEach((item) => item.remove());
 
-          qrCodeContainer.appendChild(qrCodeImg);
-          qrCodeContainer.appendChild(shortDescription);
+          // Check if any QR codes are found
+          if (qrCodes.length === 0) {
+            const noResultsMessage = document.createElement("p");
+            noResultsMessage.textContent = "No QR codes found.";
+            activatedQRsContainer.appendChild(noResultsMessage);
+            expiredQRsContainer.appendChild(noResultsMessage.cloneNode(true));
+          }
 
-          qrCodesContainer.appendChild(qrCodeContainer);
-        });
+          qrCodes.forEach((item) => {
+            const qrCodeContainer = document.createElement("div");
+            qrCodeContainer.classList.add("qrCodeItem");
+
+            const qrCodeImg = document.createElement("img");
+            qrCodeImg.src = item.qrCode;
+
+            const shortDescription = document.createElement("p");
+            shortDescription.textContent = `Short Description: ${item.shortDescription}`;
+
+            qrCodeContainer.appendChild(qrCodeImg);
+            qrCodeContainer.appendChild(shortDescription);
+
+            if (new Date() > new Date(item.expiryDate)) {
+              const activateButton = document.createElement("button");
+              activateButton.classList.add("activateButton");
+              activateButton.textContent = "Activate";
+              activateButton.addEventListener("click", async () => {
+                const activateResponse = await fetch(
+                  `/url/activate/${item.id}`,
+                  {
+                    method: "PATCH",
+                  }
+                );
+                if (activateResponse.ok) {
+                  location.reload();
+                } else {
+                  alert("Failed to activate QR code");
+                }
+              });
+              qrCodeContainer.appendChild(activateButton);
+              expiredQRsContainer.appendChild(qrCodeContainer);
+            } else {
+              activatedQRsContainer.appendChild(qrCodeContainer);
+            }
+          });
+        }
+
+        async function handleSearch() {
+          const query = searchInput.value;
+          const allQRs = await fetchQRData();
+          const filteredQRs = filterQRs(allQRs, query);
+          renderQRs(filteredQRs);
+        }
+
+        searchButton.addEventListener("click", handleSearch);
+
+        // Initially render all QR codes
+        const allQRs = await fetchQRData();
+        renderQRs(allQRs);
       });
     </script>
   </body>
