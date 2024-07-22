@@ -1,3 +1,4 @@
+<!-- public/viewAll.html -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -105,8 +106,28 @@
             const shortDescription = document.createElement("p");
             shortDescription.textContent = `Short Description: ${item.shortDescription}`;
 
+            const activationDate = document.createElement("p");
+            activationDate.textContent = `Activation Date: ${new Date(
+              item.activationDate
+            ).toLocaleString()}`;
+
+            const expiryDate = document.createElement("p");
+            expiryDate.textContent = `Expiry Date: ${new Date(
+              item.expiryDate
+            ).toLocaleString()}`;
+
+            const redirectURL = document.createElement("p");
+            redirectURL.textContent = `Redirect URL: ${item.redirectURL}`;
+
+            const shortId = document.createElement("p");
+            shortId.textContent = `Short ID: ${item.id}`;
+
             qrCodeContainer.appendChild(qrCodeImg);
             qrCodeContainer.appendChild(shortDescription);
+            qrCodeContainer.appendChild(activationDate);
+            qrCodeContainer.appendChild(expiryDate);
+            qrCodeContainer.appendChild(redirectURL);
+            qrCodeContainer.appendChild(shortId);
 
             if (new Date() > new Date(item.expiryDate)) {
               const activateButton = document.createElement("button");
@@ -149,3 +170,94 @@
     </script>
   </body>
 </html>
+
+<!-- <script>
+      document.addEventListener("DOMContentLoaded", async function () {
+        const userId = window.location.pathname.split("/").pop();
+        const searchInput = document.getElementById("searchInput");
+        const searchButton = document.getElementById("searchButton");
+
+        function filterQRs(qrCodes, query) {
+          return qrCodes.filter((item) =>
+            item.shortDescription.toLowerCase().startsWith(query.toLowerCase())
+          );
+        }
+
+        async function fetchQRData() {
+          const response = await fetch(`/url/${userId}`);
+          const data = await response.json();
+          return data;
+        }
+
+        function renderQRs(qrCodes) {
+          const activatedQRsContainer = document.getElementById("activatedQRs");
+          const expiredQRsContainer = document.getElementById("expiredQRs");
+
+          // Clear only the QR code items, not the headings
+          const qrCodeItems =
+            activatedQRsContainer.querySelectorAll(".qrCodeItem");
+          qrCodeItems.forEach((item) => item.remove());
+          const expiredItems =
+            expiredQRsContainer.querySelectorAll(".qrCodeItem");
+          expiredItems.forEach((item) => item.remove());
+
+          // Check if any QR codes are found
+          if (qrCodes.length === 0) {
+            const noResultsMessage = document.createElement("p");
+            noResultsMessage.textContent = "No QR codes found.";
+            activatedQRsContainer.appendChild(noResultsMessage);
+            expiredQRsContainer.appendChild(noResultsMessage.cloneNode(true));
+          }
+
+          qrCodes.forEach((item) => {
+            const qrCodeContainer = document.createElement("div");
+            qrCodeContainer.classList.add("qrCodeItem");
+
+            const qrCodeImg = document.createElement("img");
+            qrCodeImg.src = item.qrCode;
+
+            const shortDescription = document.createElement("p");
+            shortDescription.textContent = `Short Description: ${item.shortDescription}`;
+
+            qrCodeContainer.appendChild(qrCodeImg);
+            qrCodeContainer.appendChild(shortDescription);
+
+            if (new Date() > new Date(item.expiryDate)) {
+              const activateButton = document.createElement("button");
+              activateButton.classList.add("activateButton");
+              activateButton.textContent = "Activate";
+              activateButton.addEventListener("click", async () => {
+                const activateResponse = await fetch(
+                  `/url/activate/${item.id}`,
+                  {
+                    method: "PATCH",
+                  }
+                );
+                if (activateResponse.ok) {
+                  location.reload();
+                } else {
+                  alert("Failed to activate QR code");
+                }
+              });
+              qrCodeContainer.appendChild(activateButton);
+              expiredQRsContainer.appendChild(qrCodeContainer);
+            } else {
+              activatedQRsContainer.appendChild(qrCodeContainer);
+            }
+          });
+        }
+
+        async function handleSearch() {
+          const query = searchInput.value;
+          const allQRs = await fetchQRData();
+          const filteredQRs = filterQRs(allQRs, query);
+          renderQRs(filteredQRs);
+        }
+
+        searchButton.addEventListener("click", handleSearch);
+
+        // Initially render all QR codes
+        const allQRs = await fetchQRData();
+        renderQRs(allQRs);
+      });
+    </script> -->

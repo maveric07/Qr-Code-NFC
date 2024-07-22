@@ -52,6 +52,39 @@ async function handleGenerateNewShortURL(req, res) {
   }
 }
 
+async function handleUserActivityReport(req, res) {
+  const { userId } = req.params;
+  try {
+    const urls = await URL.find({ userId });
+    if (!urls || urls.length === 0) {
+      return res.status(404).json({ error: "No URLs found for this user" });
+    }
+
+    // Aggregate visit history data by day for all URLs of the user
+    const visitHistory = urls.reduce((acc, url) => {
+      url.visitedHistroy.forEach((visit) => {
+        const date = new Date(visit.timestamp).toLocaleDateString();
+        if (!acc[date]) {
+          acc[date] = 0;
+        }
+        acc[date]++;
+      });
+      return acc;
+    }, {});
+
+    const labels = Object.keys(visitHistory);
+    const data = Object.values(visitHistory);
+
+    res.json({
+      labels,
+      data,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+}
+
 module.exports = {
   handleGenerateNewShortURL,
+  handleUserActivityReport, // Add this line
 };

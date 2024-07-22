@@ -1,12 +1,18 @@
 //routes / url.js;
 const express = require("express");
-const { handleGenerateNewShortURL } = require("../controllers/url");
+const {
+  handleGenerateNewShortURL,
+  handleUserActivityReport,
+} = require("../controllers/url");
 const path = require("path");
 const URL = require("../models/url");
 const router = express.Router();
 
 // Route to handle generating new short URLs
 router.post("/", handleGenerateNewShortURL);
+
+//  Added route for user activity report
+router.get("/user/activity/:userId", handleUserActivityReport);
 
 // Route to get all URLs for a specific user
 router.get("/:userId", async (req, res) => {
@@ -21,6 +27,8 @@ router.get("/:userId", async (req, res) => {
       qrCode: url.qrCodeURL,
       shortDescription: url.shortDescription,
       expiryDate: url.expiryDate,
+      activationDate: url.activationDate,
+      redirectURL: url.redirectURL,
     }));
     res.json(formattedUrls);
   } catch (error) {
@@ -131,7 +139,12 @@ router.get("/report/view/user/:userId/:ShortId", (req, res) => {
   res.sendFile(path.join(__dirname, "../public/report.html"));
 });
 
+router.get("/report/view/user/:userId", (req, res) => {
+  res.sendFile(path.join(__dirname, "../public/userActivityReport.html"));
+});
+
 // Route to handle redirection based on ShortId
+//  visit history update before redirection
 router.get("/:ShortId", async (req, res) => {
   try {
     const { ShortId } = req.params;
@@ -167,6 +180,33 @@ router.get("/:ShortId", async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+router.get("/user/activity/:userId/date/:date", async (req, res) => {
+  const { userId, date } = req.params;
+  try {
+    const urls = await URL.find({ userId });
+    if (!urls || urls.length === 0) {
+      return res.status(404).json({ error: "No URLs found for this user" });
+    }
+
+    const visitHistory = urls.map((url) => {
+      const visitsOnDate = url.visitedHistroy.filter((visit) => {
+        return (
+          new Date(visit.timestamp).toLocaleDateString() ===
+          new Date(date).toLocaleDateString()
+        );
+      });
+      return {
+        shortId: url.ShortId,
+        visits: visitsOnDate.length,
+      };
+    });
+
+    res.json(visitHistory);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
 });
 
